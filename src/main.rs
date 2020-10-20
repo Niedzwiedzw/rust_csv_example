@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
+use serde_json::to_string_pretty;
 use std::convert::TryFrom;
 use std::io::BufReader;
 use std::{env, fs};
-use serde_json::to_string_pretty;
 
 #[derive(Deserialize, Debug)]
 pub struct CsvFood {
@@ -36,7 +36,7 @@ impl TryFrom<CsvFood> for Food {
             active: match &active[..] {
                 "yeah" | "TRUE" => true,
                 "NO" | "FALSE" => false,
-                _ => return Err(format!("invalid value found in `active`: {}", active)),
+                _ => return Err(format!("invalid value found in `active`: `{}`", active)),
             },
         })
     }
@@ -60,10 +60,19 @@ fn main() {
         .expect("loading csvs failed")
         .into_iter()
         .map(std::convert::TryInto::try_into)
-        .filter_map::<Food, _>(|result| result.ok())
+        .filter_map::<Food, _>(|result| match result {
+            Ok(food) => Some(food),
+            Err(e) => {
+                eprintln!("<ERROR> :: {}", e);
+                None
+            },
+        })
         .filter(|food| food.active)
         .collect::<Vec<Food>>();
 
     foods.sort_by(|one, other| one.category.cmp(&other.category));
-    println!("{}", to_string_pretty(&foods).expect("this will always serialize"));
+    println!(
+        "{}",
+        to_string_pretty(&foods).expect("this will always serialize")
+    );
 }
