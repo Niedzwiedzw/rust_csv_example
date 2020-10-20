@@ -1,0 +1,6 @@
+name,quantity,category,active
+vodka,1,alcohol,FALSE
+fish,99,food,TRUE
+kofola,88,beverages,NO
+beer,5,alcohol,TRUE
+chips,3,food,of course
